@@ -34,7 +34,7 @@ extern "C"
 
 void load_our_dlls()
 {
-	const auto fspath = std::filesystem::current_path() / "uniprox";
+	const auto fspath = std::filesystem::current_path() / "mods" / "native";
 	printf("[uniprox] Searching directory: %S\n", fspath.native().c_str());
 
 	std::error_code ec;
