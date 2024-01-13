@@ -34,7 +34,25 @@ extern "C"
 
 void load_our_dlls()
 {
-	const auto fspath = std::filesystem::current_path() / "mods" / "native";
+	// Query the image path - stolen from Aurie Core
+	DWORD process_name_size = MAX_PATH;
+	wchar_t process_name[MAX_PATH] = { 0 };
+	if (!QueryFullProcessImageNameW(
+		GetCurrentProcess(),
+		0,
+		process_name,
+		&process_name_size
+	))
+	{
+		return (void)MessageBoxA(
+			nullptr,
+			"Failed to query process path!",
+			"Uniprox",
+			MB_OK | MB_TOPMOST | MB_ICONERROR | MB_SETFOREGROUND
+		);
+	}
+
+	const auto fspath = std::filesystem::path(process_name).parent_path() / "mods" / "native";
 	printf("[uniprox] Searching directory: %S\n", fspath.native().c_str());
 
 	std::error_code ec;
@@ -75,7 +93,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 	// TODO: Spawn another thread to do this, since loading shit from DllMain is forbidden by Microsoft.
 	load_our_dlls();
 
-	printf("[uniprox] Glorious success!\n");
+	printf("[uniprox] Modules mapped successfully!\n");
 	// Back up the console window
 	HWND console_window = GetConsoleWindow();
 
@@ -83,7 +101,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 	FreeConsole();
 
 	// Close the console
-	CloseWindow(console_window);
+	PostMessage(console_window, WM_QUIT, 0, 0);
 
 	return TRUE;
 }
